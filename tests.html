@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>Mocha</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="mocha.css" />
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <div class="test-div"> </div>
+    <script src="mocha.js"></script>
+    <script>mocha.setup('bdd')</script>
+    <script src="jquery.min.js"></script>
+    <script src="end.js"></script>
+    <script> window.App = new window.ENDApp.App(); </script>
+    <script src="tester.js"></script>
+    <script src="tests.js"></script>
+    <script> window.App.start(); </script>
+    <script>
+      mocha.run();
+    </script> 
+
+  </body>
+</html>

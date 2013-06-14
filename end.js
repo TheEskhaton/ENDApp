@@ -19,8 +19,14 @@
         this.$el = function(){
             return $(selector);
         };
+        this.find = function(selector){
+            return this.$el().find(selector);
+        };
         this.on = function(evt,cb){
             this.$el().on(evt, cb);
+        };
+        this.trigger = function(evt){
+            this.$el().trigger(evt);    
         };
         this.click = function(cb){
             this.$el().click(cb);
@@ -34,9 +40,11 @@
         this.visible = function(){
             return this.$el().is(':visible');
         };
-        var self = this;
+        this.each = function(fn){
+            this.$el().each(fn);
+        }
         this.addView = function(name, selector){
-            this.views[name] = new ENDView(self.$el().find(selector).selector);
+            this.views[name] = new ENDView(this.$el().find(selector).selector);
         }
     };
     var ENDPage = function(pageSelector){
@@ -47,9 +55,14 @@
     }
     var ENDCurrentPage = function(){
         var pathRegex = /[a-zA-Z\-]+.aspx/;
-        this.path = window.location.href.match(pathRegex)[0];
+        this.page = window.location.href.match(pathRegex)[0];
         this.domain = window.location.origin;
-        this.aliasPath = window.location.href.replace(new RegExp(this.domain, 'ig'), '');
+        this.absoluteUrl = window.location.href.replace(new RegExp(this.domain, 'ig'), '');
+    };
+
+    var ENDGlobalEvent = function(name){
+        this.name = name;
+        this.events = [];
     };
 
     var App = function(){
@@ -57,6 +70,7 @@
         var _delayedInitializers = [];
         var _events = [];
 
+        var _globalEvents = [];
         var _globalData = {};
         var _validationMessages = {};
 
@@ -74,6 +88,7 @@
                 evt.$el().on(evt.on, evt.cb);
             });
         };
+         
         this.currentPage = function(){
             return new ENDCurrentPage();
         }
@@ -101,6 +116,38 @@
         this.set = function(key, value){
             _globalData[key] = value;
         };
+        this.on = function(evtName, fn){
+            var hasEvents = false;
+            $.each(_globalEvents, function(ind, val){
+                if(val.name === evtName){
+                    val.events.push(fn);
+                    hasEvents = true;
+                }
+            });
+            if(!hasEvents){
+                var newGlobal = new ENDGlobalEvent(evtName);
+                newGlobal.events.push(fn);
+                _globalEvents.push(newGlobal);
+            }
+        };
+        this.unbind = function(evtName){
+            $.each(_globalEvents, function(ind, evt){
+                if(evt.name == evtName){
+                    evt.events = [];
+                }
+            });
+        }
+        this.trigger = function(evtName){
+            $.each(_globalEvents, function(ind, val){
+                if(val.name === evtName){
+                    $.each(val.events, function(ind, cb){
+                        cb();
+                    });
+                }
+            });
+        };
+        
+        
     };
     window.ENDApp = {
         App: App,
